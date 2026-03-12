@@ -164,7 +164,7 @@ function SaleRow({ sale, isNew }: { sale: any; isNew: boolean }) {
           {sale.collection?.image_url && <img src={sale.collection.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
         </div>
         <div style={{ minWidth: 0 }}>
-          <Link href={`/collection/${sale.collection?.address}`}>
+          <Link href={`/collections/${sale.collection?.address}`}>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-0)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {sale.collection?.name || '—'}
               {sale.is_whale_sale && <span style={{ color: 'var(--amber)', fontSize: '10px' }}>◆ WHALE</span>}

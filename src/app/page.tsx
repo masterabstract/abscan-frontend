@@ -101,7 +101,7 @@ function CollectionRow({ col, rank, isLoading }: { col: any; rank: number; isLoa
   const change = col.floor_change_24h_pct
   const isUp = change > 0
   return (
-    <Link href={`/collection/${col.address}`}>
+    <Link href={`/collections/${col.address}`}>
       <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 110px 70px 80px', padding: '10px 16px', borderBottom: '1px solid var(--border)', alignItems: 'center', transition: 'all 0.15s', borderLeft: '2px solid transparent' }}
         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,133,0.03)'; e.currentTarget.style.borderLeftColor = 'var(--cyan)' }}
         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderLeftColor = 'transparent' }}

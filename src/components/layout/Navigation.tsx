@@ -188,7 +188,7 @@ export function Navigation() {
               boxShadow: '0 24px 48px rgba(0,0,0,0.8), 0 0 0 1px var(--border)',
             }}>
               {results.map((r: any) => (
-                <Link key={r.id} href={`/collection/${r.address}`}
+                <Link key={r.id} href={`/collections/${r.address}`}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
                     padding: '10px 14px', borderBottom: '1px solid var(--border)',
