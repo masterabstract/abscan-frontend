@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { apiUrl, fetcher } from '@/lib/api'
 import useSWR from 'swr'
+import { usePrivy, useCrossAppAccounts } from '@privy-io/react-auth'
 
 const NAV_LINKS = [
   { href: '/', label: 'DASHBOARD' },
@@ -214,8 +215,114 @@ export function Navigation() {
             </div>
           )}
         </div>
+
+        {/* Wallet button */}
+        <div style={{ marginLeft: '16px', flexShrink: 0 }}>
+          <WalletButton />
+        </div>
       </nav>
     </>
+  )
+}
+
+// Abstract Provider App ID (from Privy dashboard > Global Wallet > Integrations)
+const ABSTRACT_PRIVY_APP_ID = 'clpmkll0500enmm0fxaq5atty'
+
+function WalletButton() {
+  const { ready, authenticated, logout, user } = usePrivy()
+  const { loginWithCrossAppAccount } = useCrossAppAccounts()
+  const [open, setOpen] = useState(false)
+
+  // Get AGW address from linked cross-app account
+  const crossAppAccount = user?.linkedAccounts?.find((a: any) => a.type === 'cross_app')
+  const agwAddress = (crossAppAccount as any)?.embeddedWallets?.[0]?.address
+
+  if (!ready) return (
+    <div style={{
+      padding: '7px 16px', borderRadius: 'var(--radius)',
+      background: 'var(--bg-2)', border: '1px solid var(--border)',
+      fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-3)',
+    }}>···</div>
+  )
+
+  if (!authenticated || !agwAddress) return (
+    <button
+      onClick={() => loginWithCrossAppAccount({ appId: ABSTRACT_PRIVY_APP_ID })}
+      disabled={!ready}
+      style={{
+        padding: '7px 16px', borderRadius: 'var(--radius)',
+        background: 'transparent',
+        border: '1px solid var(--cyan)',
+        fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600,
+        color: 'var(--cyan)', letterSpacing: '0.08em', cursor: 'pointer',
+        transition: 'all 0.2s',
+        boxShadow: '0 0 8px var(--cyan-glow)',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(0,212,255,0.1)'
+        e.currentTarget.style.boxShadow = '0 0 16px var(--cyan-glow)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.boxShadow = '0 0 8px var(--cyan-glow)'
+      }}
+    >
+      CONNECT AGW
+    </button>
+  )
+
+  const short = agwAddress.slice(0, 6) + '…' + agwAddress.slice(-4)
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '6px 12px', borderRadius: 'var(--radius)',
+        background: 'rgba(0,212,255,0.08)',
+        border: '1px solid var(--border-bright)',
+        fontFamily: 'var(--font-mono)', fontSize: '11px', cursor: 'pointer',
+        transition: 'all 0.2s',
+      }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--cyan)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-bright)'}
+      >
+        <div style={{
+          width: '7px', height: '7px', borderRadius: '50%',
+          background: 'var(--green)', boxShadow: '0 0 6px var(--green)',
+        }} />
+        <span style={{ color: 'var(--text-0)', fontWeight: 600 }}>{short}</span>
+        <span style={{ color: 'var(--cyan)', fontSize: '10px' }}>AGW</span>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+          background: 'var(--bg-2)', border: '1px solid var(--border-bright)',
+          borderRadius: 'var(--radius-md)', minWidth: '220px', zIndex: 300,
+          boxShadow: '0 24px 48px rgba(0,0,0,0.8)', overflow: 'hidden',
+        }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--cyan)', fontFamily: 'var(--font-mono)', marginBottom: '6px', letterSpacing: '0.1em' }}>
+              ABSTRACT GLOBAL WALLET
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-0)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
+              {agwAddress}
+            </div>
+          </div>
+          <button onClick={() => { logout(); setOpen(false) }} style={{
+            width: '100%', padding: '12px 16px', textAlign: 'left',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.08em',
+            color: '#ff4444', transition: 'background 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,68,68,0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            DISCONNECT
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 

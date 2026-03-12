@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Navigation } from '@/components/layout/Navigation'
+import { Providers } from '@/components/layout/PrivyProvider'
 
 export const metadata: Metadata = {
   title: 'ABSTRACK — Abstract Chain NFT Analytics',
@@ -14,10 +15,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="grid-bg" />
         <div className="scanline" />
         <div className="radial-glow" />
-        <Navigation />
-        <main style={{ paddingTop: '80px', position: 'relative', zIndex: 2 }}>
-          {children}
-        </main>
+        <Providers>
+          <Navigation />
+          <main style={{ paddingTop: '80px', position: 'relative', zIndex: 2 }}>
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   )
