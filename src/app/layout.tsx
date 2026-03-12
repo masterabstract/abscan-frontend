@@ -3,8 +3,8 @@ import './globals.css'
 import { Navigation } from '@/components/layout/Navigation'
 
 export const metadata: Metadata = {
-  title: 'Abscan — Abstract Chain NFT Analytics',
-  description: 'Real-time NFT analytics for Abstract Chain. Track collections, sales, whales and more.',
+  title: 'ABSTRACK — Abstract Chain NFT Analytics',
+  description: 'Real-time NFT analytics on Abstract Chain. Track collections, tokens, sales and market data.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,9 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="grid-bg" />
-        <div className="noise" />
+        <div className="scanline" />
+        <div className="radial-glow" />
         <Navigation />
-        <main style={{ position: 'relative', zIndex: 2, paddingTop: '64px' }}>
+        <main style={{ paddingTop: '80px', position: 'relative', zIndex: 2 }}>
           {children}
         </main>
       </body>

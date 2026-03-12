@@ -9,65 +9,97 @@ export default function HomePage() {
   const d = data as any
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 24px' }}>
-      {/* Hero */}
-      <div style={{ marginBottom: '48px', animation: 'slide-up 0.5s ease forwards' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-          <div style={{
-            padding: '4px 10px', background: 'var(--accent-dim)', borderRadius: '20px',
-            fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent)',
-            border: '1px solid rgba(0,212,255,0.2)',
-          }}>ABSTRACT CHAIN · 2741</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', animation: 'pulse-glow 2s infinite' }} />
-            <span style={{ fontSize: '11px', color: 'var(--green)', fontFamily: 'var(--font-mono)' }}>LIVE</span>
-          </div>
+    <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '32px 24px 60px' }}>
+
+      {/* ── Hero ── */}
+      <div style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+          <span className="tag tag-cyan">ABSTRACT CHAIN · 2741</span>
+          <span className="tag tag-green">● INDEXING LIVE</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-2px' }}>
-          NFT Analytics<br />
-          <span style={{ color: 'var(--accent)' }}>On-Chain.</span> Real-Time.
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(52px, 7vw, 96px)',
+          fontWeight: 900,
+          lineHeight: 0.92,
+          letterSpacing: '-1px',
+          animation: 'slide-up 0.5s ease forwards',
+        }}>
+          <span style={{ display: 'block', color: 'var(--text-0)' }}>NFT MARKET</span>
+          <span style={{ display: 'block', color: 'var(--cyan)', textShadow: '0 0 40px var(--cyan-glow)', animation: 'flicker 8s ease infinite' }}>INTELLIGENCE</span>
         </h1>
+        <p style={{
+          marginTop: '16px', fontSize: '14px', color: 'var(--text-2)',
+          fontFamily: 'var(--font-mono)', letterSpacing: '0.05em',
+          animation: 'slide-up 0.6s ease forwards',
+        }}>
+          ON-CHAIN · REAL-TIME · ABSTRACT
+        </p>
       </div>
 
-      {/* Market Stats */}
+      {/* ── Stats grid ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: '12px', marginBottom: '48px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gap: '1px',
+        marginBottom: '40px',
+        background: 'var(--border)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-md)',
+        overflow: 'hidden',
       }}>
         {[
-          { label: 'Volume 24H', value: fmtUsd(d?.market_stats?.volume_24h_usd), sub: fmtEth(d?.market_stats?.volume_24h_eth) },
-          { label: 'Sales 24H', value: fmt(d?.market_stats?.sales_24h, 0), sub: 'transactions' },
-          { label: 'Buyers 24H', value: fmt(d?.market_stats?.buyers_24h, 0), sub: 'unique wallets' },
-          { label: 'Collections', value: fmt(d?.market_stats?.active_collections, 0), sub: 'active' },
-          { label: 'Total Holders', value: fmt(d?.market_stats?.total_holders, 0), sub: 'unique wallets' },
-          { label: 'ETH Price', value: d?.market_stats?.eth_price_usd ? '$' + d.market_stats.eth_price_usd.toFixed(0) : '—', sub: 'USD' },
+          { label: 'VOL 24H', value: fmtUsd(d?.market_stats?.volume_24h_usd), sub: fmtEth(d?.market_stats?.volume_24h_eth), accent: true },
+          { label: 'SALES 24H', value: fmt(d?.market_stats?.sales_24h, 0), sub: 'transactions' },
+          { label: 'BUYERS 24H', value: fmt(d?.market_stats?.buyers_24h, 0), sub: 'unique wallets' },
+          { label: 'COLLECTIONS', value: fmt(d?.market_stats?.active_collections, 0), sub: 'active' },
+          { label: 'HOLDERS', value: fmt(d?.market_stats?.total_holders, 0), sub: 'unique wallets' },
+          { label: 'ETH PRICE', value: d?.market_stats?.eth_price_usd ? '$' + d.market_stats.eth_price_usd.toLocaleString('en', { maximumFractionDigits: 0 }) : '···', sub: 'USD · COINGECKO', accent: false },
         ].map((stat, i) => (
           <div key={i} style={{
-            background: 'var(--bg-1)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)', padding: '20px',
-            animation: `slide-up ${0.3 + i * 0.05}s ease forwards`,
-            transition: 'border-color 0.2s, transform 0.2s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-bright)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateY(0)' }}
-          >
-            <div style={{ fontSize: '11px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{stat.label}</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '4px' }}>{isLoading ? '—' : stat.value}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-2)' }}>{stat.sub}</div>
+            background: 'var(--bg-1)',
+            padding: '24px 20px',
+            position: 'relative',
+            animation: `slide-up ${0.3 + i * 0.06}s ease forwards`,
+          }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600,
+              color: 'var(--text-3)', letterSpacing: '0.15em',
+              marginBottom: '12px',
+            }}>{stat.label}</div>
+            <div style={{
+              fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 800,
+              color: stat.accent ? 'var(--cyan)' : 'var(--text-0)',
+              letterSpacing: '-0.5px', lineHeight: 1,
+              marginBottom: '6px',
+              textShadow: stat.accent ? '0 0 20px var(--cyan-glow)' : 'none',
+            }}>
+              {isLoading ? <Skeleton width={80} height={28} /> : stat.value}
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: '10px',
+              color: 'var(--text-2)',
+            }}>{stat.sub}</div>
+            {i < 5 && <div style={{
+              position: 'absolute', right: 0, top: '20%', bottom: '20%',
+              width: '1px', background: 'var(--border)',
+            }} />}
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        {/* Top Collections */}
+      {/* ── Main content ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px' }}>
+
+        {/* Collections table */}
         <div>
-          <SectionHeader title="Top Collections" sub="by 24h volume" href="/collections" />
+          <SectionHeader title="TOP COLLECTIONS" sub="ranked by 24h volume" href="/collections" />
           <CollectionTable collections={d?.top_collections} isLoading={isLoading} />
         </div>
 
-        {/* Live Sales */}
+        {/* Live sales */}
         <div>
-          <SectionHeader title="Live Sales" sub="real-time feed" href="/sales" />
+          <SectionHeader title="LIVE SALES" sub="real-time feed" href="/sales" />
           <LiveSalesFeed />
         </div>
       </div>
@@ -75,15 +107,42 @@ export default function HomePage() {
   )
 }
 
+function Skeleton({ width, height }: { width: number; height: number }) {
+  return (
+    <div style={{
+      width, height,
+      background: 'var(--bg-4)',
+      borderRadius: '3px',
+      animation: 'skeleton 1.5s ease infinite',
+    }} />
+  )
+}
+
 function SectionHeader({ title, sub, href }: { title: string; sub: string; href: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <div style={{
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+      marginBottom: '12px', paddingBottom: '12px',
+      borderBottom: '1px solid var(--border)',
+    }}>
       <div>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.5px' }}>{title}</h2>
-        <span style={{ fontSize: '12px', color: 'var(--text-2)' }}>{sub}</span>
+        <h2 style={{
+          fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 800,
+          letterSpacing: '0.05em', color: 'var(--text-0)',
+        }}>{title}</h2>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)', letterSpacing: '0.08em' }}>
+          {sub}
+        </span>
       </div>
-      <Link href={href} style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
-        View all →
+      <Link href={href} style={{
+        fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cyan)',
+        letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '4px',
+        transition: 'opacity 0.2s',
+      }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+      >
+        VIEW ALL ›
       </Link>
     </div>
   )
@@ -92,18 +151,29 @@ function SectionHeader({ title, sub, href }: { title: string; sub: string; href:
 function CollectionTable({ collections, isLoading }: { collections?: any[]; isLoading: boolean }) {
   const rows = isLoading ? Array(10).fill(null) : (collections || [])
   return (
-    <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+    <div style={{
+      background: 'var(--bg-1)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-md)', overflow: 'hidden',
+    }}>
+      {/* Header */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px 80px 80px',
-        padding: '10px 16px', borderBottom: '1px solid var(--border)',
-        fontSize: '10px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px',
+        display: 'grid',
+        gridTemplateColumns: '36px 1fr 110px 110px 70px 80px',
+        padding: '10px 16px',
+        borderBottom: '1px solid var(--border)',
+        fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600,
+        color: 'var(--text-3)', letterSpacing: '0.15em',
+        background: 'var(--bg-0)',
       }}>
-        <span>#</span><span>Collection</span><span style={{ textAlign: 'right' }}>Floor</span>
-        <span style={{ textAlign: 'right' }}>Vol 24H</span><span style={{ textAlign: 'right' }}>Sales</span>
-        <span style={{ textAlign: 'right' }}>7D</span>
+        <span>#</span>
+        <span>COLLECTION</span>
+        <span style={{ textAlign: 'right' }}>FLOOR</span>
+        <span style={{ textAlign: 'right' }}>VOL 24H</span>
+        <span style={{ textAlign: 'right' }}>SALES</span>
+        <span style={{ textAlign: 'right' }}>7D TREND</span>
       </div>
       {rows.map((col: any, i: number) => (
-        <CollectionRow key={col?.id ?? i} col={col} rank={i + 1} isLoading={isLoading} />
+        <CollectionRow key={col?.id ?? i} col={col} rank={i + 1} isLoading={!col} />
       ))}
     </div>
   )
@@ -112,11 +182,16 @@ function CollectionTable({ collections, isLoading }: { collections?: any[]; isLo
 function CollectionRow({ col, rank, isLoading }: { col: any; rank: number; isLoading: boolean }) {
   if (isLoading || !col) return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px 80px 80px',
+      display: 'grid', gridTemplateColumns: '36px 1fr 110px 110px 70px 80px',
       padding: '12px 16px', borderBottom: '1px solid var(--border)',
+      gap: '8px', alignItems: 'center',
     }}>
-      {[32, 160, 60, 60, 40, 60].map((w, i) => (
-        <div key={i} style={{ height: '14px', width: w, background: 'var(--bg-3)', borderRadius: '4px', margin: 'auto 0' }} />
+      {[20, 140, 60, 60, 30, 64].map((w, i) => (
+        <div key={i} style={{
+          height: '12px', width: w, background: 'var(--bg-3)',
+          borderRadius: '2px', animation: 'skeleton 1.5s ease infinite',
+          animationDelay: `${i * 0.1}s`, marginLeft: i > 1 ? 'auto' : 0,
+        }} />
       ))}
     </div>
   )
@@ -127,43 +202,68 @@ function CollectionRow({ col, rank, isLoading }: { col: any; rank: number; isLoa
   return (
     <Link href={`/collection/${col.address}`}>
       <div style={{
-        display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px 80px 80px',
+        display: 'grid', gridTemplateColumns: '36px 1fr 110px 110px 70px 80px',
         padding: '10px 16px', borderBottom: '1px solid var(--border)',
-        alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s',
+        alignItems: 'center', transition: 'background 0.15s', cursor: 'crosshair',
       }}
         onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <span style={{ fontSize: '12px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>{rank}</span>
+        <span style={{
+          fontFamily: 'var(--font-mono)', fontSize: '11px',
+          color: rank <= 3 ? 'var(--amber)' : 'var(--text-3)',
+          fontWeight: rank <= 3 ? 700 : 400,
+        }}>{rank}</span>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
           <div style={{
-            width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+            width: '30px', height: '30px', borderRadius: '4px', flexShrink: 0,
             background: 'var(--bg-3)', overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '11px', color: 'var(--text-2)',
+            border: '1px solid var(--border)',
           }}>
-            {col.image_url ? <img src={col.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : col.symbol?.[0]}
+            {col.image_url && <img src={col.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{
+              fontSize: '13px', fontWeight: 600, color: 'var(--text-0)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              display: 'flex', alignItems: 'center', gap: '6px',
+            }}>
               {col.name}
-              {col.is_verified && <span style={{ color: 'var(--accent)', marginLeft: '4px', fontSize: '10px' }}>✓</span>}
+              {col.is_verified && <span style={{ color: 'var(--cyan)', fontSize: '9px' }}>✦</span>}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-2)' }}>{fmt(col.unique_holders, 0)} holders</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)' }}>
+              {fmt(col.unique_holders, 0)} holders
+            </div>
           </div>
         </div>
+
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{fmtEth(col.floor_price_eth)}</div>
-          <div style={{ fontSize: '11px', color: change == null ? 'var(--text-2)' : isUp ? 'var(--green)' : 'var(--red)' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600 }}>
+            {fmtEth(col.floor_price_eth)}
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: '10px',
+            color: change == null ? 'var(--text-2)' : isUp ? 'var(--green)' : 'var(--red)',
+          }}>
             {fmtPct(change)}
           </div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+
+        <div style={{
+          textAlign: 'right', fontFamily: 'var(--font-mono)',
+          fontSize: '12px', fontWeight: 600, color: 'var(--text-0)',
+        }}>
           {fmtEth(col.volume_24h_eth)}
         </div>
-        <div style={{ textAlign: 'right', fontSize: '13px', color: 'var(--text-1)' }}>
+
+        <div style={{
+          textAlign: 'right', fontFamily: 'var(--font-mono)',
+          fontSize: '12px', color: 'var(--text-1)',
+        }}>
           {fmt(col.sales_24h, 0)}
         </div>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Sparkline data={col.floor_sparkline} width={64} height={28} />
         </div>
@@ -173,39 +273,68 @@ function CollectionRow({ col, rank, isLoading }: { col: any; rank: number; isLoa
 }
 
 function LiveSalesFeed() {
-  const { data } = useSWR(apiUrl('/sales/live?limit=20'), fetcher, { refreshInterval: 10000 })
+  const { data } = useSWR(apiUrl('/sales/live?limit=20'), fetcher, { refreshInterval: 8000 })
   const sales = (data as any[]) || []
 
   return (
-    <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden', maxHeight: '560px', overflowY: 'auto' }}>
-      {sales.length === 0 ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-2)', fontSize: '13px' }}>
-          Waiting for sales…
-        </div>
-      ) : sales.map((sale: any) => (
-        <div key={sale.id} style={{
-          padding: '12px 14px', borderBottom: '1px solid var(--border)',
-          display: 'flex', flexDirection: 'column', gap: '6px',
-          transition: 'background 0.15s',
-        }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>{sale.collection?.name || '—'}</span>
-            <span style={{ fontSize: '13px', fontWeight: 800, fontFamily: 'var(--font-mono)', color: sale.is_whale_sale ? 'var(--gold)' : 'var(--text-0)' }}>
-              {fmtEth(sale.price_eth)}
-              {sale.is_whale_sale && ' 🐋'}
-            </span>
+    <div style={{
+      background: 'var(--bg-1)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-md)', overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '10px 16px', borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-0)',
+        fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600,
+        color: 'var(--text-3)', letterSpacing: '0.15em',
+        display: 'flex', alignItems: 'center', gap: '8px',
+      }}>
+        <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--green)', animation: 'pulse-dot 2s infinite' }} />
+        TRANSACTION STREAM
+      </div>
+
+      <div style={{ maxHeight: '520px', overflowY: 'auto' }}>
+        {sales.length === 0 ? (
+          <div style={{
+            padding: '48px 24px', textAlign: 'center',
+            fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-3)',
+          }}>
+            <div style={{ marginBottom: '8px', fontSize: '20px' }}>◌</div>
+            AWAITING TRANSACTIONS…
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>
-              #{sale.token_id} · {shortAddr(sale.buyer)}
-            </span>
-            <span style={{ fontSize: '11px', color: 'var(--text-2)' }}>{timeAgo(sale.block_timestamp)}</span>
+        ) : sales.map((sale: any, i: number) => (
+          <div key={sale.id} style={{
+            padding: '12px 16px', borderBottom: '1px solid var(--border)',
+            transition: 'background 0.15s',
+            animation: `slide-in-left 0.3s ease ${i * 0.02}s both`,
+          }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-0)' }}>
+                {sale.collection?.name || '—'}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700,
+                color: sale.is_whale_sale ? 'var(--amber)' : 'var(--green)',
+                textShadow: sale.is_whale_sale ? '0 0 12px var(--amber-glow)' : 'none',
+              }}>
+                {fmtEth(sale.price_eth)}
+                {sale.is_whale_sale && ' ◆'}
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)' }}>
+                #{sale.token_id} · {shortAddr(sale.buyer)}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-3)' }}>
+                {timeAgo(sale.block_timestamp)}
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
