@@ -60,6 +60,7 @@ export function Navigation() {
           { href: '/', label: 'Dashboard' },
           { href: '/collections', label: 'Collections' },
           { href: '/sales', label: 'Live Sales' },
+          { href: '/tokens', label: 'Tokens' },
         ].map(({ href, label }) => (
           <Link key={href} href={href} style={{
             padding: '6px 14px', borderRadius: '8px',
