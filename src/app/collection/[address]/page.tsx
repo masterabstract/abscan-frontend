@@ -20,9 +20,9 @@ export default function CollectionPage() {
     fetcher
   )
 
-  const col = (colData as any)
-  const sales = (salesData as any[]) || []
-  const holders = (holdersData as any) || {}
+  const col = (colData as any)?.data ?? (colData as any)
+  const sales = (salesData as any)?.data ?? (salesData as any[]) ?? []
+  const holders = (holdersData as any)?.data ?? (holdersData as any) ?? {}
 
   if (isLoading) return <LoadingState />
   if (!col && !isLoading) return <NotFound address={address} />
