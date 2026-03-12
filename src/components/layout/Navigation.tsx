@@ -226,7 +226,7 @@ export function Navigation() {
 }
 
 // Abstract Provider App ID (from Privy dashboard > Global Wallet > Integrations)
-const ABSTRACT_PRIVY_APP_ID = 'clpmkll0500enmm0fxaq5atty'
+const ABSTRACT_PRIVY_APP_ID = 'cm04asygd041fmry9zmcyn5o5'
 
 function WalletButton() {
   const { ready, authenticated, logout, user } = usePrivy()
