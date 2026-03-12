@@ -48,9 +48,9 @@ export function Navigation() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '14px', fontWeight: 800, color: '#000',
           fontFamily: 'var(--font-mono)',
-        }}>A</div>
+        }}>AT</div>
         <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.5px' }}>
-          abs<span style={{ color: 'var(--accent)' }}>can</span>
+<span style={{ color: 'var(--accent)' }}>ABS</span>TRACK
         </span>
       </Link>
 
