@@ -104,7 +104,7 @@ export function Navigation() {
             borderRadius: '4px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative',
-            boxShadow: '0 0 12px var(--cyan-glow), inset 0 0 8px rgba(0,212,255,0.1)',
+            boxShadow: '0 0 12px var(--cyan-glow), inset 0 0 8px rgba(0,255,133,0.1)',
           }}>
             <span style={{
               fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700,
@@ -259,7 +259,7 @@ function WalletButton() {
         boxShadow: '0 0 8px var(--cyan-glow)',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.background = 'rgba(0,212,255,0.1)'
+        e.currentTarget.style.background = 'rgba(0,255,133,0.1)'
         e.currentTarget.style.boxShadow = '0 0 16px var(--cyan-glow)'
       }}
       onMouseLeave={e => {
@@ -278,7 +278,7 @@ function WalletButton() {
       <button onClick={() => setOpen(o => !o)} style={{
         display: 'flex', alignItems: 'center', gap: '8px',
         padding: '6px 12px', borderRadius: 'var(--radius)',
-        background: 'rgba(0,212,255,0.08)',
+        background: 'rgba(0,255,133,0.08)',
         border: '1px solid var(--border-bright)',
         fontFamily: 'var(--font-mono)', fontSize: '11px', cursor: 'pointer',
         transition: 'all 0.2s',
