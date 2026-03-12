@@ -1,255 +1,170 @@
 'use client'
 import useSWR from 'swr'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import { apiUrl, fetcher, fmtEth, fmtUsd, fmtPct, fmt, timeAgo, shortAddr } from '@/lib/api'
+import { apiUrl, fetcher, fmtEth, fmtUsd, fmtPct, fmt, shortAddr, timeAgo } from '@/lib/api'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
-export default function CollectionPage() {
-  const { address } = useParams<{ address: string }>()
+export default function CollectionPage({ params }: { params: { address: string } }) {
+  const { address } = params
+  const { data: col } = useSWR(apiUrl(`/collection/${address}`), fetcher, { refreshInterval: 60000 })
+  const { data: charts } = useSWR(apiUrl(`/collection/${address}/charts?period=7d`), fetcher, { refreshInterval: 120000 })
+  const { data: sales } = useSWR(apiUrl(`/collection/${address}/sales?limit=20`), fetcher, { refreshInterval: 30000 })
+  const { data: holders } = useSWR(apiUrl(`/collection/${address}/distribution`), fetcher, { refreshInterval: 300000 })
 
-  const { data: colData, isLoading } = useSWR(
-    address ? apiUrl(`/collection/${address}`) : null,
-    fetcher, { refreshInterval: 30000 }
-  )
-  const { data: salesData } = useSWR(
-    address ? apiUrl(`/collection/${address}/sales?limit=20`) : null,
-    fetcher, { refreshInterval: 15000 }
-  )
-  const { data: holdersData } = useSWR(
-    address ? apiUrl(`/collection/${address}/holders?limit=10`) : null,
-    fetcher
-  )
+  const c = col as any
+  const ch = charts as any
+  const s = (sales as any[]) || []
+  const h = holders as any
 
-  const col = (colData as any)
-  const sales = (salesData as any[]) || []
-  const holders = (holdersData as any) || {}
+  const floorData = ch?.floor_history?.map((p: any) => ({
+    t: new Date(p.t).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
+    v: p.v, v_usd: p.v_usd,
+  })) || []
 
-  if (isLoading) return <LoadingState />
-  if (!col) return <NotFound address={address} />
-
-  const stats = [
-    { label: 'FLOOR', value: fmtEth(col?.floor_price_eth), sub: fmtUsd(col?.floor_price_usd), accent: true },
-    { label: 'VOL 24H', value: fmtEth(col?.volume_24h_eth), sub: fmtUsd(col?.volume_24h_usd) },
-    { label: 'VOL 7D', value: fmtEth(col?.volume_7d_eth), sub: '' },
-    { label: 'VOL TOTAL', value: fmtEth(col?.volume_total_eth), sub: '' },
-    { label: 'SALES 24H', value: fmt(col?.sales_24h, 0), sub: 'transactions' },
-    { label: 'HOLDERS', value: fmt(col?.unique_holders, 0), sub: 'unique wallets' },
-    { label: 'MKT CAP', value: fmtEth(col?.market_cap_eth), sub: fmtUsd(col?.market_cap_usd) },
-    { label: 'SUPPLY', value: fmt(col?.total_supply, 0), sub: col?.token_standard },
-  ]
+  const volData = ch?.volume_history?.map((p: any) => ({
+    t: new Date(p.t).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
+    v: p.v, sales: p.sales,
+  })) || []
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px 60px' }}>
-
-      {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-3)' }}>
-        <Link href="/collections" style={{ color: 'var(--text-2)', transition: 'color 0.2s' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--cyan)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-2)')}
-        >COLLECTIONS</Link>
-        <span>›</span>
-        <span style={{ color: 'var(--text-1)' }}>{col?.name?.toUpperCase() || address?.slice(0, 8)}</span>
-      </div>
-
-      {/* Collection header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', marginBottom: '36px' }}>
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 24px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', gap: '24px', marginBottom: '40px', alignItems: 'flex-start' }}>
         <div style={{
-          width: '80px', height: '80px', borderRadius: '12px', flexShrink: 0,
-          background: 'var(--bg-3)', overflow: 'hidden',
-          border: '1px solid var(--border-bright)',
-          boxShadow: '0 0 20px rgba(0,255,133,0.1)',
+          width: '80px', height: '80px', borderRadius: '16px',
+          background: 'var(--bg-3)', overflow: 'hidden', flexShrink: 0,
+          border: '2px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '24px', color: 'var(--text-2)',
         }}>
-          {col?.image_url && <img src={col.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+          {c?.image_url ? <img src={c.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : c?.symbol?.[0]}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 900, color: 'var(--text-0)', letterSpacing: '-0.5px' }}>
-              {col?.name || '—'}
-            </h1>
-            {col?.is_verified && (
-              <span style={{ color: 'var(--cyan)', fontSize: '14px', textShadow: '0 0 8px var(--cyan-glow)' }}>✦</span>
-            )}
-            {col?.symbol && (
-              <span className="tag tag-cyan">{col.symbol}</span>
-            )}
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1px' }}>{c?.name || '—'}</h1>
+            {c?.is_verified && <span style={{ padding: '2px 8px', background: 'var(--accent-dim)', color: 'var(--accent)', borderRadius: '6px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>VERIFIED</span>}
           </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-2)', marginBottom: '8px' }}>
-            {address}
-          </div>
-          {col?.description && (
-            <p style={{ fontSize: '13px', color: 'var(--text-1)', maxWidth: '600px', lineHeight: 1.6 }}>
-              {col.description}
-            </p>
-          )}
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-2)' }}>{address}</div>
         </div>
-
-        {/* Floor change badge */}
-        {col?.floor_change_24h_pct != null && (
-          <div style={{
-            padding: '12px 20px', borderRadius: 'var(--radius-md)',
-            background: col.floor_change_24h_pct >= 0 ? 'rgba(0,255,133,0.08)' : 'rgba(255,61,90,0.08)',
-            border: `1px solid ${col.floor_change_24h_pct >= 0 ? 'rgba(0,255,133,0.2)' : 'rgba(255,61,90,0.2)'}`,
-            textAlign: 'center', flexShrink: 0,
-          }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-3)', letterSpacing: '0.15em', marginBottom: '4px' }}>FLOOR 24H</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 800, color: col.floor_change_24h_pct >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {fmtPct(col.floor_change_24h_pct)}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Stats grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)',
-        gap: '1px', marginBottom: '40px',
-        background: 'var(--border)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-md)', overflow: 'hidden',
-      }}>
-        {stats.map((s, i) => (
-          <div key={i} style={{ background: 'var(--bg-1)', padding: '20px 16px', position: 'relative' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.15em', marginBottom: '10px' }}>{s.label}</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: s.accent ? 'var(--cyan)' : 'var(--text-0)', letterSpacing: '-0.3px', lineHeight: 1, marginBottom: '4px', textShadow: s.accent ? '0 0 16px var(--cyan-glow)' : 'none' }}>
-              {isLoading ? '···' : (s.value || '—')}
+      {/* Stats Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '32px' }}>
+        {[
+          { label: 'Floor Price', value: fmtEth(c?.floor_price_eth), sub: fmtUsd(c?.floor_price_usd), change: c?.floor_price_change_24h },
+          { label: 'Vol 24H', value: fmtEth(c?.volume_24h_eth), sub: fmtUsd(c?.volume_24h_usd) },
+          { label: 'Vol 7D', value: fmtEth(c?.volume_7d_eth), sub: '' },
+          { label: 'Sales 24H', value: fmt(c?.sales_24h, 0), sub: 'transactions' },
+          { label: 'Holders', value: fmt(c?.unique_holders, 0), sub: fmtPct(c?.holder_change_24h) + ' 24h' },
+          { label: 'Market Cap', value: fmtEth(c?.market_cap_eth), sub: fmtUsd(c?.market_cap_usd) },
+          { label: 'Whales', value: fmt(c?.whale_wallet_count, 0), sub: 'wallets' },
+          { label: 'Listed', value: c?.listed_percentage ? c.listed_percentage.toFixed(1) + '%' : '—', sub: fmt(c?.listed_count, 0) + ' items' },
+        ].map((stat, i) => (
+          <div key={i} style={{
+            background: 'var(--bg-1)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', padding: '16px 20px',
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>{stat.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '4px' }}>{stat.value || '—'}</div>
+            <div style={{ fontSize: '11px', color: stat.change != null ? (stat.change > 0 ? 'var(--green)' : 'var(--red)') : 'var(--text-2)' }}>
+              {stat.change != null ? fmtPct(stat.change) : stat.sub}
             </div>
-            {s.sub && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)' }}>{s.sub}</div>}
-            {i < 7 && <div style={{ position: 'absolute', right: 0, top: '20%', bottom: '20%', width: '1px', background: 'var(--border)' }} />}
           </div>
         ))}
       </div>
 
-      {/* Main content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-
-        {/* Sales history */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
-            <div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--text-0)' }}>RECENT SALES</h2>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)' }}>last transactions</span>
-            </div>
-          </div>
-
-          <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 120px 120px 120px', padding: '10px 16px', borderBottom: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.15em', background: 'var(--bg-0)' }}>
-              <span>TOKEN</span><span>DETAILS</span><span style={{ textAlign: 'right' }}>PRICE</span><span style={{ textAlign: 'right' }}>BUYER</span><span style={{ textAlign: 'right' }}>TIME</span>
-            </div>
-            {sales.length === 0 ? (
-              <div style={{ padding: '48px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-3)' }}>
-                <div style={{ color: 'var(--cyan)', marginBottom: '8px' }}>◌</div>NO SALES YET
-              </div>
-            ) : sales.map((sale: any, i: number) => (
-              <div key={sale.id ?? i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 120px 120px 120px', padding: '11px 16px', borderBottom: '1px solid var(--border)', alignItems: 'center', transition: 'all 0.15s', borderLeft: '2px solid transparent' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,133,0.03)'; e.currentTarget.style.borderLeftColor = 'var(--border-bright)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderLeftColor = 'transparent' }}
-              >
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-1)', fontWeight: 600 }}>#{sale.token_id}</div>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>{sale.sale_type || 'secondary'}</div>
-                </div>
-                <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: sale.is_whale_sale ? 'var(--amber)' : 'var(--cyan)' }}>
-                  {fmtEth(sale.price_eth)}
-                </div>
-                <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-1)' }}>
-                  {shortAddr(sale.buyer_address || sale.buyer)}
-                </div>
-                <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-3)' }}>
-                  {timeAgo(sale.block_timestamp)}
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Charts */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px' }}>
+        {/* Floor chart */}
+        <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px' }}>Floor Price · 7D</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={floorData}>
+              <defs>
+                <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00d4ff" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#00d4ff" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="t" tick={{ fill: '#5a7090', fontSize: 11, fontFamily: 'Space Mono' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#5a7090', fontSize: 11, fontFamily: 'Space Mono' }} axisLine={false} tickLine={false} width={50} tickFormatter={v => v.toFixed(3)} />
+              <Tooltip contentStyle={{ background: '#0d1520', border: '1px solid #162234', borderRadius: '8px', color: '#f0f4ff', fontFamily: 'Space Mono', fontSize: 12 }} formatter={(v: any) => [v.toFixed(4) + ' ETH', 'Floor']} />
+              <Area type="monotone" dataKey="v" stroke="#00d4ff" strokeWidth={2} fill="url(#floorGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Top holders */}
-        <div>
-          <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--text-0)' }}>TOP HOLDERS</h2>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-2)' }}>by tokens held</span>
-          </div>
+        {/* Volume chart */}
+        <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px' }}>Volume · 7D</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={volData}>
+              <XAxis dataKey="t" tick={{ fill: '#5a7090', fontSize: 11, fontFamily: 'Space Mono' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#5a7090', fontSize: 11, fontFamily: 'Space Mono' }} axisLine={false} tickLine={false} width={50} tickFormatter={v => v.toFixed(1)} />
+              <Tooltip contentStyle={{ background: '#0d1520', border: '1px solid #162234', borderRadius: '8px', color: '#f0f4ff', fontFamily: 'Space Mono', fontSize: 12 }} formatter={(v: any) => [v.toFixed(3) + ' ETH', 'Volume']} />
+              <Bar dataKey="v" fill="#00d4ff" fillOpacity={0.7} radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-          <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            {(!holders.holders || holders.holders.length === 0) ? (
-              <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-3)' }}>
-                <div style={{ color: 'var(--cyan)', marginBottom: '8px' }}>◌</div>NO DATA YET
+      {/* Holder Distribution & Sales */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Holder distribution */}
+        <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px' }}>Holder Distribution</h3>
+          {h?.buckets ? h.buckets.map((b: any) => (
+            <div key={b.label} style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-1)' }}>{b.label} token{b.label !== '1' ? 's' : ''}</span>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-0)' }}>{b.count} ({b.pct?.toFixed(1)}%)</span>
               </div>
-            ) : (holders.holders || []).slice(0, 10).map((h: any, i: number) => (
-              <div key={h.address ?? i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,255,133,0.03)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: i < 3 ? 'var(--amber)' : 'var(--text-3)', fontWeight: i < 3 ? 700 : 400, width: '20px', flexShrink: 0 }}>{i + 1}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-0)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {shortAddr(h.address)}
-                  </div>
-                  {h.pct_supply != null && (
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-3)', marginTop: '2px' }}>
-                      {parseFloat(h.pct_supply).toFixed(1)}% supply
-                    </div>
-                  )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--cyan)' }}>
-                    {fmt(h.tokens_held, 0)}
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-3)' }}>tokens</div>
-                </div>
+              <div style={{ height: '4px', background: 'var(--bg-3)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${b.pct}%`, background: 'var(--accent)', borderRadius: '2px', transition: 'width 0.5s ease' }} />
               </div>
-            ))}
-          </div>
-
-          {/* Distribution summary */}
-          {holders.distribution && (
-            <div style={{ marginTop: '16px', background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-3)', letterSpacing: '0.15em', marginBottom: '12px' }}>DISTRIBUTION</div>
-              {[
-                { label: 'TOP 1%', value: holders.distribution.top1_pct },
-                { label: 'TOP 5%', value: holders.distribution.top5_pct },
-                { label: 'TOP 10%', value: holders.distribution.top10_pct },
-              ].map(d => (
-                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-2)', width: '40px' }}>{d.label}</span>
-                  <div style={{ flex: 1, height: '4px', background: 'var(--bg-4)', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.min(d.value ?? 0, 100)}%`, height: '100%', background: 'var(--cyan)', borderRadius: '2px', transition: 'width 0.8s ease' }} />
-                  </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-1)', width: '35px', textAlign: 'right' }}>
-                    {d.value != null ? `${parseFloat(d.value).toFixed(1)}%` : '—'}
-                  </span>
-                </div>
-              ))}
+            </div>
+          )) : <div style={{ color: 'var(--text-2)', fontSize: '13px' }}>No distribution data yet</div>}
+          {h && (
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>TOP 10 HOLD</div>
+                <div style={{ fontSize: '16px', fontWeight: 700 }}>{h.top10_pct?.toFixed(1)}%</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>WHALES</div>
+                <div style={{ fontSize: '16px', fontWeight: 700 }}>{h.whale_count}</div>
+              </div>
             </div>
           )}
         </div>
-      </div>
-    </div>
-  )
-}
 
-function LoadingState() {
-  return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px' }}>
-      <div style={{ display: 'flex', gap: '24px', marginBottom: '36px', alignItems: 'center' }}>
-        <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'var(--bg-3)', animation: 'skeleton 1.5s ease infinite' }} />
-        <div>
-          <div style={{ width: '200px', height: '32px', background: 'var(--bg-3)', borderRadius: '4px', animation: 'skeleton 1.5s ease infinite', marginBottom: '8px' }} />
-          <div style={{ width: '320px', height: '14px', background: 'var(--bg-3)', borderRadius: '4px', animation: 'skeleton 1.5s ease infinite' }} />
+        {/* Recent Sales */}
+        <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px' }}>Recent Sales</h3>
+          <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+            {s.length === 0 ? (
+              <div style={{ color: 'var(--text-2)', fontSize: '13px' }}>No sales data yet</div>
+            ) : s.map((sale: any) => (
+              <div key={sale.id} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 0', borderBottom: '1px solid var(--border)',
+              }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600 }}>#{sale.token_id}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>
+                    {shortAddr(sale.buyer)}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: sale.is_whale_sale ? 'var(--gold)' : 'var(--text-0)' }}>
+                    {fmtEth(sale.price_eth)}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-2)' }}>{timeAgo(sale.block_timestamp)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function NotFound({ address }: { address: string }) {
-  return (
-    <div style={{ maxWidth: '600px', margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '48px', color: 'var(--border-bright)', marginBottom: '24px' }}>◌</div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-0)', marginBottom: '12px' }}>COLLECTION NOT FOUND</h1>
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-2)', marginBottom: '24px', wordBreak: 'break-all' }}>{address}</p>
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-3)', marginBottom: '32px' }}>This collection may not be tracked yet or the indexer is still syncing.</p>
-      <Link href="/collections" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--cyan)', letterSpacing: '0.1em', border: '1px solid var(--border-bright)', padding: '10px 20px', borderRadius: 'var(--radius)' }}>
-        ← BACK TO COLLECTIONS
-      </Link>
     </div>
   )
 }
