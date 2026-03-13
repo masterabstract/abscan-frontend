@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { href: '/collections', label: 'COLLECTIONS' },
   { href: '/tokens', label: 'TOKENS' },
   { href: '/sales', label: 'LIVE SALES' },
+  { href: '/submit', label: 'SUBMIT' },
 ]
 
 export function Navigation() {
