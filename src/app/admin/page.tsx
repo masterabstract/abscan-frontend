@@ -18,17 +18,22 @@ export default function AdminPage() {
   const { loginWithCrossAppAccount } = useCrossAppAccounts()
   const [authed, setAuthed] = useState(false)
 
-  // Get AGW address
-  const agwAccount = user?.linkedAccounts?.find((a: any) => a.type === 'cross_app' && a.providerApp?.id === ABSTRACT_PRIVY_APP_ID)
-  const agwAddress = (agwAccount as any)?.address?.toLowerCase()
+  // Get any connected wallet address (AGW or embedded)
+  const agwAccount = user?.linkedAccounts?.find((a: any) => 
+    a.type === 'cross_app' && a.providerApp?.id === ABSTRACT_PRIVY_APP_ID
+  )
+  const embeddedWallet = user?.linkedAccounts?.find((a: any) => a.type === 'wallet')
+  const agwAddress = ((agwAccount as any)?.address || (embeddedWallet as any)?.address)?.toLowerCase()
 
   useEffect(() => {
-    if (authenticated && agwAddress) {
-      if (ADMIN_WALLETS.length === 0 || ADMIN_WALLETS.includes(agwAddress)) {
+    if (authenticated) {
+      if (ADMIN_WALLETS.length === 0) {
+        setAuthed(true)
+      } else if (agwAddress && ADMIN_WALLETS.includes(agwAddress)) {
         setAuthed(true)
       }
     }
-  }, [authenticated, agwAddress])
+  }, [authenticated, agwAddress, user])
 
   if (!ready) return <LoadingScreen />
 
