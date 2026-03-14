@@ -7,8 +7,8 @@ import useSWR, { mutate } from 'swr'
 const ABSTRACT_PRIVY_APP_ID = 'cm04asygd041fmry9zmcyn5o5'
 
 // ── Admin wallet whitelist — add your AGW address here ───────────────────────
-const ADMIN_WALLETS = [
-    0x067f5D956Cf82479321b873a6205F7114CE85d96
+const ADMIN_WALLETS: string[] = [
+  '0x067f5d956cf82479321b873a6205f7114ce85d96'
 ]
 
 type Tab = 'collections' | 'submissions'
